@@ -16,7 +16,7 @@ function(input, output, session) {
             scale_y_continuous(limits = c(min(weather$tmax_f, na.rm = TRUE),
                                           max(weather$tmax_f, na.rm = TRUE))) +
             scale_x_date(date_labels = "%B") +
-            labs(x = "Month", y = "Daily High Temperature", title = "High Temperature by Day")
+            labs(x = "Month", y = "Daily High Temperature", color = "Year", title = "High Temperature by Day")
 
     })
     
@@ -33,7 +33,7 @@ function(input, output, session) {
             scale_y_continuous(limits = c(min(weather$tmin_f, na.rm = TRUE),
                                           max(weather$tmin_f, na.rm = TRUE))) +
             scale_x_date(date_labels = "%B") +
-            labs(x = "Month", y = "Daily Low Temperature", title = "Low Temperature by Day")
+            labs(x = "Month", y = "Daily Low Temperature", color = "Year", title = "Low Temperature by Day")
         
     })
 
