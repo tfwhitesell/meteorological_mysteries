@@ -45,6 +45,7 @@ weather |>
 ```
 
 Basic plot for year line chart showing temperatures to get app started.
+This one doesn't work to plot year on the same x (where 1/1 is compared directly to 1/1 etc)
 ```{r}
 weather |> 
     select(year, date, tmax_f, month_name_short) |> 
@@ -60,13 +61,30 @@ weather |>
     labs(x = "Date", y = "Daily High Temperature", title = "High Temperature by Day")
 ```
 
+```{r}
+weather |> 
+    select(year, date, day_of_year, month_day, tmax_f, month_name_short) |> 
+    filter(!is.na(tmax_f)) |> 
+    filter(year == 2000 | year == 2005) |> 
+    group_by(year, day_of_year) |> 
+    summarize(high_temp = mean(tmax_f)) |>  
+    ggplot(aes(x = day_of_year, y = high_temp, color = as.factor(year))) +
+    geom_line() +
+    scale_y_continuous(limits = c(min(weather$tmax_f, na.rm = TRUE),
+                                  max(weather$tmax_f, na.rm = TRUE))) +
+    scale_color_brewer("Dark2")
+```
 
 
 
 
 
 
-
+Write data to binary file for app
+```{r}
+weather |> 
+  write_rds("../met_mysteries_app/data/weather.Rds")
+```
 
 
 
