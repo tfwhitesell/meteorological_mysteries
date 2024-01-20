@@ -1,0 +1,74 @@
+---
+title: "Explore weather station data"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(scales)
+library(zoo)
+```
+
+Read in weather station data.
+
+```{r}
+weather <- read_csv("../data/weather.csv")
+```
+
+Average max and min temperatures per day. This will allow for visualizing year-over-year trends, and longer.
+
+This chart shows the day-to-day variability and would probably be more useful if looking at a specific month but there are just too many days in a year to look at it all together like this.
+```{r}
+weather |> 
+    filter(!is.na(tmax_f)) |> 
+    filter(year == 2023) |> 
+    group_by(year, day_of_year) |> 
+    summarize(daily_avg_high_temp = mean(tmax_f)) |> 
+    ggplot(aes(x = day_of_year, y = daily_avg_high_temp, color = year)) +
+    geom_line()
+```
+
+Next approach: rolling average.
+```{r}
+weather |> 
+    filter(!is.na(tmax_f)) |> 
+    filter(year >= 2000 & year <= 2005) |> 
+    group_by(year, day_of_year) |> 
+    summarize(daily_avg_high_temp = mean(tmax_f)) |>  
+    mutate(rolling_avg_high_temp = rollmean(daily_avg_high_temp, k = 7, align = "right", fill = NA)) |> 
+    ggplot(aes(x = day_of_year, y = rolling_avg_high_temp, color = as.factor(year))) +
+    geom_line() +
+    scale_color_brewer("Dark2")
+```
+
+Basic plot for year line chart showing temperatures to get app started.
+```{r}
+weather |> 
+    select(year, date, tmax_f, month_name_short) |> 
+    filter(!is.na(tmax_f)) |> 
+    filter(year == 1899) |> 
+    group_by(date) |> 
+    summarize(high_temp = mean(tmax_f)) |> 
+    ggplot(aes(x = date, y = high_temp)) +
+    geom_line() +
+    scale_y_continuous(limits = c(min(weather$tmax_f, na.rm = TRUE),
+                                  max(weather$tmax_f, na.rm = TRUE))) +
+    scale_x_date(date_labels = "%B") +
+    labs(x = "Date", y = "Daily High Temperature", title = "High Temperature by Day")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
