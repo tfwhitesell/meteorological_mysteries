@@ -17,6 +17,13 @@ Read in weather station data.
 ```{r}
 weather <- read_csv("../data/weather.csv")
 ```
+Add constant year date column to enable year-over-year comparison charts. There should be a more elegant way to do this, but it works.
+```{r}
+weather <- weather |> 
+    mutate(month_day_constant = update(date, year = 2004))
+```
+
+
 
 Average max and min temperatures per day. This will allow for visualizing year-over-year trends, and longer.
 
@@ -76,6 +83,40 @@ weather |>
 ```
 
 
+This is the graph that actually does what I want to show year-to-year comparisons.
+```{r}
+weather |> 
+            select(year, month_day_constant, tmax_f) |> 
+            filter(year == 2000 | year == 2005) |> 
+            filter(!is.na(tmax_f)) |> 
+            group_by(year, month_day_constant) |> 
+            summarize(high_temp = mean(tmax_f)) |> 
+            ggplot(aes(x = month_day_constant, y = high_temp, color = as.factor(year))) +
+            geom_line() +
+            scale_y_continuous(limits = c(min(weather$tmax_f, na.rm = TRUE),
+                                          max(weather$tmax_f, na.rm = TRUE))) +
+            scale_x_date(date_labels = "%B") +
+            labs(x = "Month", y = "Daily High Temperature", title = "High Temperature by Day")
+```
+
+And the same for low temperatures
+```{r}
+        weather |> 
+            select(year, month_day_constant, tmin_f) |> 
+            filter(year == 2000 | year == 2005) |> 
+            filter(!is.na(tmin_f)) |> 
+            group_by(year, month_day_constant) |> 
+            summarize(low_temp = mean(tmin_f)) |> 
+            ggplot(aes(x = month_day_constant, y = low_temp, color = as.factor(year))) +
+            geom_line() +
+            scale_y_continuous(limits = c(min(weather$tmin_f, na.rm = TRUE),
+                                          max(weather$tmin_f, na.rm = TRUE))) +
+            scale_x_date(date_labels = "%B") +
+            labs(x = "Month", y = "Daily Low Temperature", title = "Low Temperature by Day")
+```
+
+
+
 
 
 
@@ -86,6 +127,11 @@ weather |>
   write_rds("../met_mysteries_app/data/weather.Rds")
 ```
 
+Write data to csv for app (experimenting, the binary is larger than the csv from python)
+```{r}
+weather |> 
+    write_csv("../met_mysteries_app/data/weather.csv")
+```
 
 
 
