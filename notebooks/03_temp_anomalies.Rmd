@@ -1,0 +1,79 @@
+---
+title: "Temperature Anomalies"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+Read in daily temperature data. One row per date with tmax and tmin as the mean of all station readings from that day. Stations are in close geographic proximity so by using this technique I'm avoiding the issue of missing readings for any given station and also minimizing the impact of erroneous readings. All dates have at least 3 station readings of maximum and minimum temperatures for that day.
+```{r}
+weather <- read_csv("../data/temps_daily.csv")
+```
+
+Add constant year date column to enable year-over-year comparisons more easily. Come back and replace this if I figure out a way to get month labels on the x-axis with just month and day in the column (I haven't been able to figure out how to get R to recognize that as a date format).
+I picked 2004 because it was a leap year - otherwise it has no significance.
+```{r}
+weather <- weather |> 
+    mutate(month_day_constant = update(date, year = 2004))
+```
+
+The first part is recreating some graphs from the EDA notebook but with this cleaner dataset. I was grouping by year for those charts anyway so using this dataset will result in less processing power being required to run the shiny app.
+
+Compare high temperatures by year.
+```{r}
+weather |> 
+    select(year, month_day_constant, tmax_f) |> 
+    filter(year == 2000 | year == 2005) |> 
+    ggplot(aes(x = month_day_constant, y = tmax_f, color = as.factor(year))) +
+    geom_line() +
+    scale_y_continuous(limits = c(min(weather$tmax_f),
+                                  max(weather$tmax_f))) +
+    scale_x_date(date_labels = "%B") +
+    labs(x = "Month", y = "Daily High Temperature", color = "Year", title = "High Temperature by Day")
+```
+
+Compare low temperatures by year.
+```{r}
+weather |> 
+    select(year, month_day_constant, tmin_f) |> 
+    filter(year == 2000 | year == 2005) |> 
+    ggplot(aes(x = month_day_constant, y = tmin_f, color = as.factor(year))) +
+    geom_line() +
+    scale_y_continuous(limits = c(min(weather$tmin_f),
+                                  max(weather$tmin_f))) +
+    scale_x_date(date_labels = "%B") +
+    labs(x = "Month", y = "Daily Low Temperature", color = "Year", title = "Low Temperature by Day")
+```
+
+Trying to put high and low temps on one plot but it's not working - come back to it if there's time.
+```{r}
+# weather |> 
+#     select(year, month_day_constant, tmin_f, tmax_f) |> 
+#     filter(year == 2000 | year == 2005) |> 
+#     ggplot(aes(x = month_day_constant)) +
+#     geom_line(y = tmin_f, color = as.factor(year)) +
+#     geom_line(y = tmax_f, color = as.factor(year)) +
+#     scale_y_continuous(limits = c(min(weather$tmin_f),
+#                                   max(weather$tmax_f))) +
+#     scale_x_date(date_labels = "%B") +
+#     labs(x = "Month", y = "Daily Temperatures", color = "Year", title = "High and Low Temperatures by Day")
+```
+
+
+
+
+
+
+
+
+
+
+
+Write data to binary file for app
+```{r}
+weather |> 
+  write_csv("../met_mysteries_app/data/weather.csv")
+```
