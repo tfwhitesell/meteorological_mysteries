@@ -6,6 +6,8 @@ output: html_notebook
 ```{r}
 library(tidyverse)
 library(ggplot2)
+library(anomalize)
+library(slider)
 ```
 
 Read in daily temperature data. One row per date with tmax and tmin as the mean of all station readings from that day. Stations are in close geographic proximity so by using this technique I'm avoiding the issue of missing readings for any given station and also minimizing the impact of erroneous readings. All dates have at least 3 station readings of maximum and minimum temperatures for that day.
@@ -63,8 +65,55 @@ Trying to put high and low temps on one plot but it's not working - come back to
 ```
 
 
+Use anomalize library - is it really going to be as easy as it says?
+The answer to that is no - it's not treating years like I expect it to.
+```{r}
+weather |> 
+    # filter(year <= 1905) |> 
+    select(date, tmax_f) |> 
+    arrange(date) |> 
+    time_decompose(tmax_f, method = "twitter", frequency = "12 months", trend = "auto", merge = TRUE) |>  
+    anomalize(remainder, alpha = 0.2, max_anoms = 0.01) |> 
+    time_recompose() |>  
+    plot_anomalies(ncol = 3, alpha_dots = 0.5)
+```
+Line chart to show daily temps by year. I think this should show all years in the range selected without the problems I was having before.
+Good, but number of days and the variability makes the chart less informative.
+```{r}
+weather |> 
+    select(year, month_day_constant, tmax_diff) |> 
+    filter(year >= 1990) |> 
+    ggplot(aes(x = month_day_constant, y = tmax_diff, group = year, color = year)) +
+    geom_line() +
+    scale_y_continuous(limits = c(min(weather$tmax_diff),
+                                  max(weather$tmax_diff))) +
+    scale_x_date(date_labels = "%B") +
+    scale_color_viridis_c() +
+    labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Differences from Mean by Day")
+```
 
+Create sliding window with lag and lead to smooth it out which I hope will solve the problems in the above chart.
+It's a little better but still not good.
+```{r}
+# this is lag, lead is the same but with .after
+# slide(x, ~sum(.x), .before = 2, .complete = TRUE)
 
+weather |> 
+    select(year, date, month_day_constant, tmax_diff) |> 
+    arrange(date) |> 
+    mutate(window_tmax_diff = (slide_dbl(tmax_diff, ~mean(.x), .before = 3) + 
+               slide_dbl(tmax_diff, ~mean(.x), .after = 3)) / 2) |> 
+    filter(year >= 1990) |> 
+    ggplot(aes(x = month_day_constant, y = window_tmax_diff, group = year, color = year)) +
+    geom_line() +
+    # scale_y_continuous(limits = c(min(weather$window_tmax_diff),
+    #                               max(weather$window_tmax_diff))) +
+    scale_x_date(date_labels = "%B") +
+    scale_color_viridis_c() +
+    labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Differences from Mean by Day")
+```
+
+Potential approach: use a weekly average so there are only 52 data points per year.
 
 
 
