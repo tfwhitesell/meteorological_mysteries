@@ -24,8 +24,30 @@ fluidPage(
                          plotOutput("linePlot2")
                      )
                  )
-        ) #,
-        # tabPanel("Temperature Difference from Mean"),
-        # tabPanel("another tab")
+        ),
+        tabPanel("Temperature Difference from Mean",
+                 sliderInput(
+                     "slideryear",
+                     "Select a year:",
+                     min = min(year_choices),
+                     max = max(year_choices),
+                     value = c(min(year_choices), max(year_choices)),
+                     sep = "",
+                     dragRange = TRUE),
+                 
+                 selectInput("focus_year", 
+                             label = "Select focus year:", 
+                             choices = year_choices),
+                 
+                 mainPanel(
+                     fluidRow(
+                         plotOutput("linePlot3")
+                     ),
+                     fluidRow(
+                         plotOutput("linePlot4")
+                     )
+                 )
+        )#,
+        #tabPanel("Anomalies by Month and Year")
     )
 )

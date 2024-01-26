@@ -69,7 +69,7 @@ Use anomalize library - is it really going to be as easy as it says?
 The answer to that is no - it's not treating years like I expect it to.
 ```{r}
 weather |> 
-    # filter(year <= 1905) |> 
+    filter(year >= 2015) |> 
     select(date, tmax_f) |> 
     arrange(date) |> 
     time_decompose(tmax_f, method = "twitter", frequency = "12 months", trend = "auto", merge = TRUE) |>  
@@ -82,9 +82,11 @@ Good, but number of days and the variability makes the chart less informative.
 ```{r}
 weather |> 
     select(year, month_day_constant, tmax_diff) |> 
-    filter(year >= 1990) |> 
-    ggplot(aes(x = month_day_constant, y = tmax_diff, group = year, color = year)) +
-    geom_line() +
+    filter(year >= 2000) |> 
+    arrange(year, month_day_constant) |> 
+    ggplot() + 
+    geom_line(aes(x = month_day_constant, y = tmax_diff, group = year, color = year)) + 
+    geom_line(data = filter(weather, year == 2012), aes(x = month_day_constant, y = tmax_diff), color = "red") + 
     scale_y_continuous(limits = c(min(weather$tmax_diff),
                                   max(weather$tmax_diff))) +
     scale_x_date(date_labels = "%B") +
@@ -92,8 +94,8 @@ weather |>
     labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Differences from Mean by Day")
 ```
 
-Create sliding window with lag and lead to smooth it out which I hope will solve the problems in the above chart.
-It's a little better but still not good.
+Create sliding window with lag and lead to smooth it out a little.
+Added a line for year of interest (will be a selector in shiny) and trend lines for the overall data and selected year.
 ```{r}
 # this is lag, lead is the same but with .after
 # slide(x, ~sum(.x), .before = 2, .complete = TRUE)
@@ -104,10 +106,11 @@ weather |>
     mutate(window_tmax_diff = (slide_dbl(tmax_diff, ~mean(.x), .before = 3) + 
                slide_dbl(tmax_diff, ~mean(.x), .after = 3)) / 2) |> 
     filter(year >= 1990) |> 
-    ggplot(aes(x = month_day_constant, y = window_tmax_diff, group = year, color = year)) +
-    geom_line() +
-    # scale_y_continuous(limits = c(min(weather$window_tmax_diff),
-    #                               max(weather$window_tmax_diff))) +
+    ggplot() +
+    geom_line(aes(x = month_day_constant, y = tmax_diff, group = year, color = year)) + 
+    geom_line(data = filter(weather, year == 2022), aes(x = month_day_constant, y = tmax_diff), color = "red") + 
+    geom_smooth(data = filter(weather, year == 2022), aes(x = month_day_constant, y = tmax_diff), method = "lm", se = FALSE, color = "red") +
+    geom_smooth(data = filter(weather, year != 2022), aes(x = month_day_constant, y = tmax_diff), method = "lm", se = FALSE, color = "blue") +
     scale_x_date(date_labels = "%B") +
     scale_color_viridis_c() +
     labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Differences from Mean by Day")
