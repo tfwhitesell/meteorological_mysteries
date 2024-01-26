@@ -63,4 +63,35 @@ function(input, output, session) {
             labs(x = "Month", y = "Low Temperature Difference from Mean", color = "Year", title = "Low Temperature Differences from Mean by Day")
     })
     
+    filtered <- reactive({
+        if (input$decade == "All"){
+            decade_filter <- decade_choices
+        } else {
+            decade_filter <- input$decade
+        }
+        
+        weather |>
+            filter(decade %in% decade_filter)
+    })
+    
+    output$barPlot <- renderPlot({
+
+        filtered() |> 
+            filter(abs(tmax_zscore) >= 3) |> 
+            select(month_name_short) |> 
+            group_by(month_name_short) |> 
+            mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+            ggplot(aes(x = month_name_short)) +
+            geom_bar(stat = "count")
+    })
+    
+    output$boxPlot <- renderPlot({
+        filtered() |> 
+            select(month_name_short, tmax_zscore) |> 
+            group_by(month_name_short) |> 
+            mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+            ggplot(aes(x = month_name_short, y = tmax_zscore)) +
+            geom_boxplot()
+    })
+    
 }

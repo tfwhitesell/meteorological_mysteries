@@ -16,6 +16,7 @@ weather <- read_csv("../data/temps_daily.csv")
 ```
 
 Add constant year date column to enable year-over-year comparisons more easily. Come back and replace this if I figure out a way to get month labels on the x-axis with just month and day in the column (I haven't been able to figure out how to get R to recognize that as a date format).
+I've actually seen other people (who know what they're doing) use this exact strategy so I think this is an acceptable strategy even though it feels like a kludge.
 I picked 2004 because it was a leap year - otherwise it has no significance.
 ```{r}
 weather <- weather |> 
@@ -128,10 +129,46 @@ weather |>
     ggplot(aes(x = month_name_short)) +
     geom_bar(stat = "count")
 ```
+```{r}
+# z-score distribution by month
+weather |> 
+    select(month_name_short, tmax_zscore) |> 
+    group_by(month_name_short) |> 
+    mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+    ggplot(aes(x = month_name_short, y = tmax_zscore)) +
+    geom_boxplot()
+```
 
 
+Histogram showing distribution of temperatures overall
+```{r}
+weather |> 
+    ggplot(aes(x = tmax_f)) +
+    geom_histogram(binwidth = 1)
+```
 
+Histogram of temperatures by month
+```{r}
+weather |> 
+    ggplot(aes(x = tmax_f)) +
+    geom_histogram(binwidth = 1) +
+    facet_wrap(~month_name_short)
+```
 
+Histogram of daily diff from mean temp
+```{r}
+weather |> 
+    ggplot(aes(x = tmax_diff)) +
+    geom_histogram(binwidth = 1)
+```
+
+Histogram of daily diff from mean temp by month
+```{r}
+weather |> 
+    ggplot(aes(x = tmax_diff)) +
+    geom_histogram(binwidth = 1) +
+    facet_wrap(~month_name_short)
+```
 
 
 

@@ -47,7 +47,20 @@ fluidPage(
                          plotOutput("linePlot4")
                      )
                  )
-        )#,
-        #tabPanel("Anomalies by Month and Year")
+        ),
+        tabPanel("Z-score Anomalies by Month and Year",
+                 selectInput("decade",
+                             label = "Select a decade:",
+                             choices = decade_choices),
+                 
+                 mainPanel(
+                     fluidRow(
+                         plotOutput("barPlot")
+                     ),
+                     fluidRow(
+                         plotOutput("boxPlot")
+                     )
+                 )
+        )
     )
 )
