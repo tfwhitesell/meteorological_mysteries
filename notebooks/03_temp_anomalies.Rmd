@@ -115,7 +115,19 @@ weather |>
 
 ```
 
-Potential approach: use a weekly average so there are only 52 data points per year.
+Z-score based anomalies. Scores above absolute 3 (ie more than 3std away from the mean) to be considered.
+Bar chart showing aggregate anomalies by month - is there a seasonal effect?
+Boxplot of all z-scores by month - are there months with larger anomalies or greater variability in z-score?
+```{r}
+# number of anomalies by month
+weather |> 
+    filter(abs(tmax_zscore) >= 3) |> 
+    select(month_name_short) |> 
+    group_by(month_name_short) |> 
+    mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+    ggplot(aes(x = month_name_short)) +
+    geom_bar(stat = "count")
+```
 
 
 
@@ -123,7 +135,17 @@ Potential approach: use a weekly average so there are only 52 data points per ye
 
 
 
-Write data to binary file for app
+
+
+
+
+
+
+
+
+
+
+Write data to file for app
 ```{r}
 weather |> 
   write_csv("../met_mysteries_app/data/weather.csv")
