@@ -41,7 +41,7 @@ function(input, output, session) {
             filter(between(year, input$slideryear[1], input$slideryear[2])) |> 
             ggplot() +
             geom_line(aes(x = month_day_constant, y = tmax_diff, group = year, color = year)) + 
-            geom_line(data = filter(weather, year == input$focus_year), aes(x = month_day_constant, y = tmax_diff), color = "red") + 
+            geom_line(data = filter(weather, year == input$focus_year), aes(x = month_day_constant, y = tmax_diff), size = 0.9, color = "sienna3") + 
             scale_x_date(date_labels = "%B") +
             scale_color_viridis_c() +
             labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Differences from Mean by Day")
@@ -57,7 +57,7 @@ function(input, output, session) {
             filter(between(year, input$slideryear[1], input$slideryear[2])) |> 
             ggplot() +
             geom_line(aes(x = month_day_constant, y = tmin_diff, group = year, color = year)) + 
-            geom_line(data = filter(weather, year == input$focus_year), aes(x = month_day_constant, y = tmin_diff), color = "red") + 
+            geom_line(data = filter(weather, year == input$focus_year), aes(x = month_day_constant, y = tmin_diff), size = 0.9, color = "sienna3") + 
             scale_x_date(date_labels = "%B") +
             scale_color_viridis_c() +
             labs(x = "Month", y = "Low Temperature Difference from Mean", color = "Year", title = "Low Temperature Differences from Mean by Day")

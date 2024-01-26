@@ -97,9 +97,6 @@ weather |>
 Create sliding window with lag and lead to smooth it out a little.
 Added a line for year of interest (will be a selector in shiny) and trend lines for the overall data and selected year.
 ```{r}
-# this is lag, lead is the same but with .after
-# slide(x, ~sum(.x), .before = 2, .complete = TRUE)
-
 weather |> 
     select(year, date, month_day_constant, tmax_diff) |> 
     arrange(date) |> 
@@ -108,12 +105,14 @@ weather |>
     filter(year >= 1990) |> 
     ggplot() +
     geom_line(aes(x = month_day_constant, y = tmax_diff, group = year, color = year)) + 
-    geom_line(data = filter(weather, year == 2022), aes(x = month_day_constant, y = tmax_diff), color = "red") + 
-    geom_smooth(data = filter(weather, year == 2022), aes(x = month_day_constant, y = tmax_diff), method = "lm", se = FALSE, color = "red") +
-    geom_smooth(data = filter(weather, year != 2022), aes(x = month_day_constant, y = tmax_diff), method = "lm", se = FALSE, color = "blue") +
+    geom_line(data = filter(weather, year == 2022), aes(x = month_day_constant, y = tmax_diff), size = 0.9, color = "sienna3") + 
+    # geom_smooth(data = filter(weather, year == 2022), aes(x = month_day_constant, y = tmax_diff), method = "lm", se = FALSE, color = "red") +
+    # geom_smooth(data = filter(weather, year != 2022), aes(x = month_day_constant, y = tmax_diff), method = "lm", se = FALSE, color = "blue") +
     scale_x_date(date_labels = "%B") +
     scale_color_viridis_c() +
-    labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Differences from Mean by Day")
+    labs(x = "Month", y = "High Temperature Difference from Mean", color = "Year", title = "High Temperature Difference from Mean by Day")
+
+
 ```
 
 Potential approach: use a weekly average so there are only 52 data points per year.
