@@ -82,7 +82,8 @@ function(input, output, session) {
             group_by(month_name_short) |> 
             mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
             ggplot(aes(x = month_name_short)) +
-            geom_bar(stat = "count")
+            geom_bar(stat = "count") +
+            labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalous High Temperatures by Decade")
     })
     
     output$boxPlot <- renderPlot({
@@ -91,7 +92,8 @@ function(input, output, session) {
             group_by(month_name_short) |> 
             mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
             ggplot(aes(x = month_name_short, y = tmax_zscore)) +
-            geom_boxplot()
+            geom_boxplot() +
+            labs(x = "Month", y = "High Temperature Z-scores", title = "High Temperature Z-scores by Decade")
     })
     
 }

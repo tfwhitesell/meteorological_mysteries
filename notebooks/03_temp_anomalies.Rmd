@@ -8,6 +8,7 @@ library(tidyverse)
 library(ggplot2)
 library(anomalize)
 library(slider)
+library(ggridges)
 ```
 
 Read in daily temperature data. One row per date with tmax and tmin as the mean of all station readings from that day. Stations are in close geographic proximity so by using this technique I'm avoiding the issue of missing readings for any given station and also minimizing the impact of erroneous readings. All dates have at least 3 station readings of maximum and minimum temperatures for that day.
@@ -127,7 +128,8 @@ weather |>
     group_by(month_name_short) |> 
     mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
     ggplot(aes(x = month_name_short)) +
-    geom_bar(stat = "count")
+    geom_bar(stat = "count") +
+    labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalies by Decade")
 ```
 ```{r}
 # z-score distribution by month
@@ -136,7 +138,8 @@ weather |>
     group_by(month_name_short) |> 
     mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
     ggplot(aes(x = month_name_short, y = tmax_zscore)) +
-    geom_boxplot()
+    geom_boxplot() +
+    labs(x = "Month", y = "High Temperature Z-scores", title = "High Temperature Z-scores by Decade")
 ```
 
 
@@ -150,10 +153,46 @@ weather |>
 Histogram of temperatures by month
 ```{r}
 weather |> 
+    mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
     ggplot(aes(x = tmax_f)) +
     geom_histogram(binwidth = 1) +
-    facet_wrap(~month_name_short)
+    facet_wrap(~month_name_short, strip.position = "bottom")
 ```
+
+Joy plot to compare temperatures for a month across decades to see if the pattern has shifted either for certain months or overall.
+Month selector in shiny app.
+```{r}
+month_max <- weather |> 
+    select(month_name_short, tmax_f) |> 
+    filter(month_name_short == "Jul")
+
+weather |> 
+    select(month_name_short, tmax_f, decade) |> 
+    filter(month_name_short == "Jul") |> 
+    ggplot(aes(x = tmax_f, y = as.factor(decade), fill = stat(x))) +
+    geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+    scale_fill_viridis_c() +
+    coord_cartesian(xlim = quantile(month_max$tmax_f, c(0.01, 0.99))) +
+    labs(x = "Maximum Temperature",
+         y = "Decade",
+         title = "Density Plot of High Temperatures for Selected Month by Decade")
+```
+
+Ridgeline plot for all months - want to show yearly trends.
+```{r}
+weather |> 
+    select(tmax_f, decade) |> 
+    ggplot(aes(x = tmax_f, y = as.factor(decade), fill = stat(x))) +
+    geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+    scale_fill_viridis_c() +
+    coord_cartesian(xlim = quantile(weather$tmax_f, c(0.01, 0.99))) +
+    labs(x = "Maximum Temperature",
+         y = "Decade",
+         title = "Density Plot of High Temperatures by Decade")
+```
+
+
+
 
 Histogram of daily diff from mean temp
 ```{r}
@@ -169,6 +208,39 @@ weather |>
     geom_histogram(binwidth = 1) +
     facet_wrap(~month_name_short)
 ```
+
+Line chart to show general yearly trend over time.
+Option 1: do monthly average with stacked line chart (using constant year and year as color).
+```{r}
+weather |> 
+    select(year, month_name_short, tmax_f) |> 
+    group_by(year, month_name_short) |> 
+    summarize(tmax_mean = mean(tmax_f)) |> 
+    mutate(month_name_short = factor(month_name_short, levels = month.abb)) |>
+    ggplot(aes(x = month_name_short, y = tmax_mean, group = year, color = year)) +
+    geom_line()
+```
+
+Option 2: take the diff from mean monthly average and do stacked line chart.
+Not quite what I was expecting.
+```{r}
+weather |> 
+    select(year, month_name_short, tmax_diff) |> 
+    group_by(year, month_name_short) |> 
+    summarize(mean_tmax_diff = mean(tmax_diff)) |> 
+    mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+    ggplot(aes(x = month_name_short, y = mean_tmax_diff, group = year, color = year)) +
+    geom_line()
+```
+
+```{r}
+weather |> 
+    select(date, tmax_f) |> 
+    ggplot(aes(x = date, y = tmax_f)) +
+    geom_line()
+```
+
+
 
 
 
