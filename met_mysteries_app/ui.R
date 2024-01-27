@@ -25,6 +25,7 @@ fluidPage(
                      )
                  )
         ),
+        
         tabPanel("Temperature Difference from Mean",
                  sliderInput(
                      "slideryear",
@@ -48,12 +49,40 @@ fluidPage(
                      )
                  )
         ),
-        tabPanel("Z-score Anomalies by Month and Year",
+        
+        tabPanel("Temperature Distribution and Z-score Anomalies by Month and Decade",
                  selectInput("decade",
                              label = "Select a decade:",
                              choices = decade_choices),
+                 selectInput("month",
+                             label = "Select a month:",
+                             choices = month_choices),
                  
                  mainPanel(
+                     fluidRow(
+                         column(width = 6,
+                                plotOutput("histPlot")
+                         ),
+                         column(width = 6,
+                                plotOutput("histPlot4")
+                         )
+                     ),
+                     fluidRow(
+                         column(width = 6,
+                                plotOutput("histPlot2")
+                         ),
+                         column(width = 6,
+                                plotOutput("histPlot3")
+                         )
+                     ),
+                     fluidRow(
+                         column(width = 6,
+                                plotOutput("ridgePlot")
+                         ),
+                         column(width = 6,
+                                plotOutput("ridgePlot2")
+                         )
+                     ),
                      fluidRow(
                          column(width = 6,
                                 plotOutput("barPlot")
@@ -71,6 +100,32 @@ fluidPage(
                          )
                      )
                  )
-        )
+        ),
+        
+        # tabPanel("Z-score Anomalies by Month and Year",
+        #          selectInput("decade",
+        #                      label = "Select a decade:",
+        #                      choices = decade_choices),
+        #          
+        #          mainPanel(
+        #              fluidRow(
+        #                  column(width = 6,
+        #                         plotOutput("barPlot")
+        #                  ),
+        #                  column(width = 6,
+        #                         plotOutput("barPlot2")
+        #                  )
+        #              ),
+        #              fluidRow(
+        #                  column(width = 6,
+        #                         plotOutput("boxPlot")
+        #                  ),
+        #                  column(width = 6,
+        #                         plotOutput("boxPlot2")
+        #                  )
+        #              )
+        #          )
+        # )
+        
     )
 )

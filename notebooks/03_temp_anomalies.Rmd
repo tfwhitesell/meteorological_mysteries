@@ -131,6 +131,13 @@ weather |>
     geom_bar(stat = "count") +
     labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalies by Decade")
 ```
+
+```{r}
+weather |> 
+    filter(abs(tmin_zscore) >= 3)
+```
+
+
 ```{r}
 # z-score distribution by month
 weather |> 
@@ -147,7 +154,8 @@ Histogram showing distribution of temperatures overall
 ```{r}
 weather |> 
     ggplot(aes(x = tmax_f)) +
-    geom_histogram(binwidth = 1)
+    geom_histogram(binwidth = 1) +
+    labs(x = "High Temperature", y = "Count of Days", title = "Distribution of High Temperatures 1899-2023")
 ```
 
 Histogram of temperatures by month
@@ -156,14 +164,15 @@ weather |>
     mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
     ggplot(aes(x = tmax_f)) +
     geom_histogram(binwidth = 1) +
-    facet_wrap(~month_name_short, strip.position = "bottom")
+    facet_wrap(~month_name_short, strip.position = "bottom") +
+    labs(x = "High Temperature", y = "Count of Days", title = "Distribution of High Temperatures by Month")
 ```
 
 Joy plot to compare temperatures for a month across decades to see if the pattern has shifted either for certain months or overall.
 Month selector in shiny app.
 ```{r}
-month_max <- weather |> 
-    select(month_name_short, tmax_f) |> 
+month_select <- weather |> 
+    select(month_name_short, tmax_f, tmin_f) |> 
     filter(month_name_short == "Jul")
 
 weather |> 
@@ -172,7 +181,7 @@ weather |>
     ggplot(aes(x = tmax_f, y = as.factor(decade), fill = stat(x))) +
     geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
     scale_fill_viridis_c() +
-    coord_cartesian(xlim = quantile(month_max$tmax_f, c(0.01, 0.99))) +
+    coord_cartesian(xlim = quantile(month_select$tmax_f, c(0.01, 0.99))) +
     labs(x = "Maximum Temperature",
          y = "Decade",
          title = "Density Plot of High Temperatures for Selected Month by Decade")
@@ -233,14 +242,39 @@ weather |>
     geom_line()
 ```
 
+Not putting this in the app, I need more time to figure out how to make this chart work.
 ```{r}
-weather |> 
-    select(date, tmax_f) |> 
-    ggplot(aes(x = date, y = tmax_f)) +
-    geom_line()
+# Calculate monthly averages
+monthly_avg_data <- weather  |> 
+    mutate(month = format(date, "%Y-%m"))  |> 
+    group_by(month)  |> 
+    summarize(mean_temperature = mean(tmax_f, na.rm = TRUE))
+
+# Create a line plot
+ggplot(monthly_avg_data, aes(x = as.Date(paste0(month, "-01"), format="%Y-%m-%d"), y = mean_temperature)) +
+    geom_line() + 
+    geom_smooth(method = "lm", se = FALSE, color = "blue") + 
+    labs(x = "Month", y = "Monthly Mean Temperature", title = "Monthly Mean Temperature Over Time") +
+    theme_minimal()
+```
+```{r}
+month_choices <- weather |>
+    pull(month_name) |>
+    unique() |>
+    factor(levels = month.name) |> 
+    sort()
+
+# month_choices <- c("All", month_choices)
 ```
 
 
+```{r}
+decadez_choices <- weather |>
+    # filter(between(year, 1900, 2019)) |> 
+    pull(decade) |>
+    unique() |>
+    sort()
+```
 
 
 

@@ -3,6 +3,7 @@
 # Define server logic required to draw basic line chart
 function(input, output, session) {
     
+    # daily high temperatures by year
     output$linePlot <- renderPlot({
         
         weather |> 
@@ -17,6 +18,7 @@ function(input, output, session) {
         
     })
     
+    # daily low temperatures by year
     output$linePlot2 <- renderPlot({
         
         weather |> 
@@ -31,6 +33,7 @@ function(input, output, session) {
         
     })
     
+    # high temperature difference from mean
     output$linePlot3 <- renderPlot({
         
         weather |> 
@@ -48,6 +51,7 @@ function(input, output, session) {
         
     })
     
+    #low temperature difference from mean
     output$linePlot4 <- renderPlot({
         weather |> 
             select(year, date, month_day_constant, tmin_diff) |> 
@@ -74,6 +78,7 @@ function(input, output, session) {
             filter(decade %in% decade_filter)
     })
     
+    # anomalous high temperatures by decade
     output$barPlot <- renderPlot({
 
         filtered() |> 
@@ -86,6 +91,7 @@ function(input, output, session) {
             labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalous High Temperatures by Decade")
     })
     
+    # anomalous low temperatures by decade
     output$barPlot2 <- renderPlot({
         
         filtered() |> 
@@ -98,6 +104,7 @@ function(input, output, session) {
             labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalous Low Temperatures by Decade")
     })
     
+    # boxplot of high temp z-scores by month and decade
     output$boxPlot <- renderPlot({
         filtered() |> 
             select(month_name_short, tmax_zscore) |> 
@@ -108,6 +115,7 @@ function(input, output, session) {
             labs(x = "Month", y = "Z-score", title = "High Temperature Z-scores by Decade")
     })
     
+    # boxplot of low temp z-scores by month and decade
     output$boxPlot2 <- renderPlot({
         filtered() |> 
             select(month_name_short, tmin_zscore) |> 
@@ -116,6 +124,89 @@ function(input, output, session) {
             ggplot(aes(x = month_name_short, y = tmin_zscore)) +
             geom_boxplot() +
             labs(x = "Month", y = "Z-score", title = "Low Temperature Z-scores by Decade")
+    })
+    
+    # filtered <- reactive({
+    #     if (input$decade == "All"){
+    #         decade_filter <- decade_choices
+    #     } else {
+    #         decade_filter <- input$decade
+    #     }
+    #     
+    #     weather |>
+    #         filter(decade %in% decade_filter)
+    # })
+    
+    # high temperature distribution
+    output$histPlot <- renderPlot({
+        weather |> 
+            ggplot(aes(x = tmax_f)) +
+            geom_histogram(binwidth = 1) +
+            labs(x = "High Temperature", y = "Count of Days", title = "Distribution of High Temperatures 1899-2023")
+    })
+    
+    # low temperature distribution
+    output$histPlot4 <- renderPlot({
+        weather |> 
+            ggplot(aes(x = tmin_f)) +
+            geom_histogram(binwidth = 1) +
+            labs(x = "Low Temperature", y = "Count of Days", title = "Distribution of Low Temperatures 1899-2023")
+    })
+    
+    # high temperature distribution by month and decade
+    output$histPlot2 <- renderPlot({
+        filtered() |> 
+            mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+            ggplot(aes(x = tmax_f)) +
+            geom_histogram(binwidth = 1) +
+            facet_wrap(~month_name_short, strip.position = "bottom") +
+            labs(x = "High Temperature", y = "Count of Days", title = "Distribution of High Temperatures by Month")
+    })
+    
+    # low temperature distribution by month and decade
+    output$histPlot3 <- renderPlot({
+        filtered() |>
+            mutate(month_name_short = factor(month_name_short, levels = month.abb)) |>
+            ggplot(aes(x = tmin_f)) +
+            geom_histogram(binwidth = 1) +
+            facet_wrap(~month_name_short, strip.position = "bottom") +
+            labs(x = "High Temperature", y = "Count of Days", title = "Distribution of High Temperatures by Month")
+    })
+    
+    # ridgeline of month high temps by decade
+    output$ridgePlot <- renderPlot({
+        month_select <- weather |> 
+            select(month_name_short, tmax_f, tmin_f) |> 
+            filter(month_name_short == input$month)
+        
+        weather |> 
+            select(month_name_short, tmax_f, decade) |> 
+            filter(month_name_short == input$month) |> 
+            ggplot(aes(x = tmax_f, y = as.factor(decade), fill = stat(x))) +
+            geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+            scale_fill_viridis_c() +
+            coord_cartesian(xlim = quantile(month_select$tmax_f, c(0.01, 0.99))) +
+            labs(x = "Maximum Temperature",
+                 y = "Decade",
+                 title = "Density Plot of High Temperatures for Selected Month by Decade")
+    })
+    
+    # ridgeline of month low temps by decade
+    output$ridgePlot2 <- renderPlot({
+        month_select <- weather |> 
+            select(month_name_short, tmax_f, tmin_f) |> 
+            filter(month_name_short == input$month)
+        
+        weather |> 
+            select(month_name_short, tmin_f, decade) |> 
+            filter(month_name_short == input$month) |> 
+            ggplot(aes(x = tmin_f, y = as.factor(decade), fill = stat(x))) +
+            geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
+            scale_fill_viridis_c() +
+            coord_cartesian(xlim = quantile(month_select$tmin_f, c(0.01, 0.99))) +
+            labs(x = "Minimum Temperature",
+                 y = "Decade",
+                 title = "Density Plot of Low Temperatures for Selected Month by Decade")
     })
     
 }

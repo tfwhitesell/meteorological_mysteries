@@ -16,3 +16,9 @@ decade_choices <- weather |>
     sort()
 
 decade_choices <- c("All", decade_choices)
+
+month_choices <- weather |>
+    pull(month_name_short) |>
+    unique() |>
+    factor(levels = month.abb) |> 
+    sort()
