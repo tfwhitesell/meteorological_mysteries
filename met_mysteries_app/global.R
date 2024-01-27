@@ -1,6 +1,8 @@
 library(shiny)
 library(tidyverse)
 library(shinyWidgets)
+library(ggridges)
+library(slider)
 
 weather <- read_csv("data/weather.csv")
 

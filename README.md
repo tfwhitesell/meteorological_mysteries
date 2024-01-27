@@ -43,6 +43,6 @@ The subject of anomaly detection has been coming up with increasing frequency in
 - Shiny
 
 ### **Shiny App**
-Link coming soon
+[Meteorological Mysteries Shiny App](https://tfwhitesell.shinyapps.io/met_mysteries_app/)
 
 *Back to [Contents](#contents)*

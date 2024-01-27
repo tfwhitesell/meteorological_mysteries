@@ -291,5 +291,6 @@ decadez_choices <- weather |>
 Write data to file for app
 ```{r}
 weather |> 
+    select(year, date, month_name_short, tmax_f, tmin_f, tmax_diff, tmin_diff, tmax_zscore, tmin_zscore, decade, month_day_constant) |> 
   write_csv("../met_mysteries_app/data/weather.csv")
 ```
