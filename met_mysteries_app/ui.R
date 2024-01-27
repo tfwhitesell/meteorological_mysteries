@@ -55,10 +55,20 @@ fluidPage(
                  
                  mainPanel(
                      fluidRow(
-                         plotOutput("barPlot")
+                         column(width = 6,
+                                plotOutput("barPlot")
+                         ),
+                         column(width = 6,
+                                plotOutput("barPlot2")
+                         )
                      ),
                      fluidRow(
-                         plotOutput("boxPlot")
+                         column(width = 6,
+                                plotOutput("boxPlot")
+                         ),
+                         column(width = 6,
+                                plotOutput("boxPlot2")
+                         )
                      )
                  )
         )

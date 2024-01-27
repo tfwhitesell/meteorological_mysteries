@@ -86,6 +86,18 @@ function(input, output, session) {
             labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalous High Temperatures by Decade")
     })
     
+    output$barPlot2 <- renderPlot({
+        
+        filtered() |> 
+            filter(abs(tmin_zscore) >= 3) |> 
+            select(month_name_short) |> 
+            group_by(month_name_short) |> 
+            mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+            ggplot(aes(x = month_name_short)) +
+            geom_bar(stat = "count") +
+            labs(x = "Month", y = "Count of Anomalies", title = "Count of Anomalous Low Temperatures by Decade")
+    })
+    
     output$boxPlot <- renderPlot({
         filtered() |> 
             select(month_name_short, tmax_zscore) |> 
@@ -93,7 +105,17 @@ function(input, output, session) {
             mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
             ggplot(aes(x = month_name_short, y = tmax_zscore)) +
             geom_boxplot() +
-            labs(x = "Month", y = "High Temperature Z-scores", title = "High Temperature Z-scores by Decade")
+            labs(x = "Month", y = "Z-score", title = "High Temperature Z-scores by Decade")
+    })
+    
+    output$boxPlot2 <- renderPlot({
+        filtered() |> 
+            select(month_name_short, tmin_zscore) |> 
+            group_by(month_name_short) |> 
+            mutate(month_name_short = factor(month_name_short, levels = month.abb)) |> 
+            ggplot(aes(x = month_name_short, y = tmin_zscore)) +
+            geom_boxplot() +
+            labs(x = "Month", y = "Z-score", title = "Low Temperature Z-scores by Decade")
     })
     
 }
